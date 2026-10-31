@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quiz Clash - Multiplayer Trivia Battle</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- HOME -->
+  <div class="screen active" id="scr-home">
+    <h1 class="logo">QUIZ <span>CLASH</span></h1>
+    <p class="tagline">Real-time trivia battle. No login needed.</p>
+    <p><a href="/" style="color:#baff55">← Play Solo Sprint or Clash Mode</a></p>
+    <div class="rules card">
+      <h3>How to play</h3>
+      <ol>
+        <li><b>Create</b> a room and share the 4-letter code, or <b>join</b> with one.</li>
+        <li>Answer <b>10 questions</b> before the 15-second timer runs out.</li>
+        <li><b>Faster correct answers = more points.</b> Watch the live leaderboard!</li>
+      </ol>
+    </div>
+    <input id="in-name" maxlength="16" placeholder="Your name" autocomplete="off">
+    <button id="btn-create" class="btn primary">Create Room</button>
+    <div class="join-row">
+      <input id="in-code" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters">
+      <button id="btn-join" class="btn secondary">Join</button>
+    </div>
+    <p id="home-err" class="err"></p>
+  </div>
+
+  <!-- LOBBY -->
+  <div class="screen" id="scr-lobby">
+    <h2>Room <span id="room-code" class="code"></span></h2>
+    <p class="hint">Share this code. Friends join from any phone or laptop.</p>
+    <ul id="lobby-players" class="plist"></ul>
+    <button id="btn-start" class="btn primary hidden">Start Game</button>
+    <p id="lobby-hint" class="hint"></p>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="screen" id="scr-game">
+    <div class="qbar"><span id="q-num"></span><span id="q-timer"></span></div>
+    <div class="timer-track"><div id="timer-fill"></div></div>
+    <h2 id="q-text"></h2>
+    <div id="q-answers"></div>
+    <p id="q-locked" class="hint hidden">Locked in! Waiting for others...</p>
+  </div>
+
+  <!-- REVEAL -->
+  <div class="screen" id="scr-reveal">
+    <h2 id="rev-title"></h2>
+    <p id="rev-answer" class="hint"></p>
+    <ul id="rev-board" class="plist"></ul>
+  </div>
+
+  <!-- FINISHED -->
+  <div class="screen" id="scr-end">
+    <h1 class="logo small">GAME <span>OVER</span></h1>
+    <h2 id="winner"></h2>
+    <ul id="final-board" class="plist"></ul>
+    <button id="btn-again" class="btn primary">Back to Lobby</button>
+  </div>
+</div>
+<script src="client.js"></script>
+</body>
+</html>

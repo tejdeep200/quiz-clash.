@@ -11,58 +11,7 @@ const REVEAL_SECONDS = Number(process.env.REVEAL_SECONDS) || 4;
 const MAX_PLAYERS = 8;
 
 // ---------- Question bank (general knowledge, varied difficulty) ----------
-const QUESTIONS = [
-  { q: "What is the capital of Japan?", a: ["Kyoto", "Osaka", "Tokyo", "Seoul"], c: 2 },
-  { q: "How many continents are there on Earth?", a: ["5", "6", "7", "8"], c: 2 },
-  { q: "Which planet is known as the Red Planet?", a: ["Venus", "Mars", "Jupiter", "Mercury"], c: 1 },
-  { q: "What is 12 x 8?", a: ["94", "96", "98", "108"], c: 1 },
-  { q: "Which ocean is the largest?", a: ["Atlantic", "Indian", "Arctic", "Pacific"], c: 3 },
-  { q: "What year did humans first land on the Moon?", a: ["1965", "1969", "1972", "1959"], c: 1 },
-  { q: "Which gas do plants absorb from the atmosphere?", a: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], c: 2 },
-  { q: "How many sides does a hexagon have?", a: ["5", "6", "7", "8"], c: 1 },
-  { q: "What is the largest mammal in the world?", a: ["African elephant", "Blue whale", "Giraffe", "Polar bear"], c: 1 },
-  { q: "Which country has the largest population?", a: ["USA", "Indonesia", "China", "India"], c: 3 },
-  { q: "What is H2O commonly known as?", a: ["Salt", "Water", "Oxygen", "Sugar"], c: 1 },
-  { q: "Which instrument has 88 keys?", a: ["Guitar", "Violin", "Piano", "Drums"], c: 2 },
-  { q: "How many minutes are in a full day?", a: ["1240", "1440", "1640", "1840"], c: 1 },
-  { q: "Which country invented paper?", a: ["Egypt", "Greece", "China", "India"], c: 2 },
-  { q: "What is the currency of the United Kingdom?", a: ["Euro", "Dollar", "Pound", "Franc"], c: 2 },
-  { q: "Which bird cannot fly?", a: ["Eagle", "Penguin", "Sparrow", "Hawk"], c: 1 },
-  { q: "How many colors are in a rainbow?", a: ["6", "7", "8", "9"], c: 1 },
-  { q: "What is the hardest natural substance on Earth?", a: ["Gold", "Iron", "Diamond", "Quartz"], c: 2 },
-  { q: "Which language has the most native speakers?", a: ["English", "Spanish", "Hindi", "Mandarin"], c: 3 },
-  { q: "What does 'www' stand for in a website address?", a: ["World Wide Web", "World Web Wide", "Web World Wide", "Wide World Web"], c: 0 },
-  { q: "Which desert is the largest in the world?", a: ["Gobi", "Sahara", "Mojave", "Kalahari"], c: 1 },
-  { q: "How many legs does a spider have?", a: ["6", "8", "10", "12"], c: 1 },
-  { q: "What is the boiling point of water at sea level?", a: ["90C", "95C", "100C", "110C"], c: 2 },
-  { q: "Which company created the iPhone?", a: ["Samsung", "Google", "Apple", "Nokia"], c: 2 },
-  { q: "What is the smallest prime number?", a: ["0", "1", "2", "3"], c: 2 },
-  { q: "Which continent is the Sahara Desert mostly in?", a: ["Asia", "Africa", "Australia", "S. America"], c: 1 },
-  { q: "How many players are on a soccer team on the field?", a: ["9", "10", "11", "12"], c: 2 },
-  { q: "What is the main ingredient in guacamole?", a: ["Tomato", "Avocado", "Pepper", "Onion"], c: 1 },
-  { q: "Which element has the chemical symbol 'O'?", a: ["Gold", "Oxygen", "Silver", "Iron"], c: 1 },
-  { q: "How many days are there in a leap year?", a: ["365", "366", "364", "367"], c: 1 },
-  { q: "What is the capital of Australia?", a: ["Sydney", "Melbourne", "Canberra", "Perth"], c: 2 },
-  { q: "Which sport uses a puck?", a: ["Basketball", "Tennis", "Ice hockey", "Golf"], c: 2 },
-  { q: "What is 15% of 200?", a: ["25", "30", "35", "40"], c: 1 },
-  { q: "Which animal is the fastest land animal?", a: ["Lion", "Cheetah", "Horse", "Greyhound"], c: 1 },
-  { q: "How many strings does a standard guitar have?", a: ["4", "5", "6", "7"], c: 2 },
-  { q: "What is the largest planet in our solar system?", a: ["Saturn", "Jupiter", "Neptune", "Earth"], c: 1 },
-  { q: "Which month has 28 days in a non-leap year?", a: ["January", "February", "All of them", "December"], c: 2 },
-  { q: "What do you call a baby frog?", a: ["Tadpole", "Froglet", "Polliwog", "Spawn"], c: 0 },
-  { q: "Which country is home to the kangaroo?", a: ["New Zealand", "South Africa", "Australia", "Brazil"], c: 2 },
-  { q: "How many hours are in a week?", a: ["148", "158", "168", "178"], c: 2 },
-  { q: "What is the freezing point of water?", a: ["0C", "32C", "-10C", "100C"], c: 0 },
-  { q: "Which fruit has its seeds on the outside?", a: ["Blueberry", "Strawberry", "Raspberry", "Cherry"], c: 1 },
-  { q: "What is the tallest mountain in the world?", a: ["K2", "Kilimanjaro", "Everest", "Denali"], c: 2 },
-  { q: "How many teeth does an adult human typically have?", a: ["28", "30", "32", "34"], c: 2 },
-  { q: "Which direction does the sun rise?", a: ["North", "South", "East", "West"], c: 2 },
-  { q: "What is the longest river in the world?", a: ["Amazon", "Nile", "Mississippi", "Yangtze"], c: 1 },
-  { q: "Which metal is liquid at room temperature?", a: ["Iron", "Mercury", "Lead", "Aluminum"], c: 1 },
-  { q: "How many zeros are in one million?", a: ["5", "6", "7", "8"], c: 1 },
-  { q: "What is the national sport of Japan?", a: ["Karate", "Baseball", "Sumo", "Judo"], c: 2 },
-  { q: "Which planet is closest to the Sun?", a: ["Venus", "Earth", "Mercury", "Mars"], c: 2 },
-];
+const QUESTIONS = require('./public/questions').map(q => ({q:q.text,a:q.answers,c:q.correct}));
 
 // ---------- Rooms ----------
 const rooms = new Map();
@@ -131,6 +80,8 @@ function nextQuestion(room) {
 
 function answer(room, player, choice) {
   if (room.state !== 'question' || player.answered) return;
+  if (!Number.isInteger(choice) || choice < 0 || choice > 3) return;
+  if (Date.now() - room.qStart >= QUESTION_SECONDS * 1000) return;
   player.answered = true;
   const q = room.questions[room.qIndex];
   const correct = choice === q.c;
@@ -185,13 +136,18 @@ function removePlayer(room, player) {
 
 // ---------- WebSocket ----------
 const server = http.createServer((req, res) => {
-  let file = req.url === '/' ? '/index.html' : req.url;
-  const fp = path.join(__dirname, 'public', file);
+  let file;
+  try { file = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
+  catch { res.writeHead(400); res.end('Bad request'); return; }
+  if (file.endsWith('/')) file += 'index.html';
+  const base = path.resolve(__dirname, 'public');
+  const fp = path.resolve(base, '.' + file);
+  if (!fp.startsWith(base + path.sep)) { res.writeHead(403); res.end('Forbidden'); return; }
   const ext = path.extname(fp);
-  const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript' };
+  const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.txt': 'text/plain' };
   fs.readFile(fp, (err, data) => {
     if (err || !types[ext]) { res.writeHead(404); res.end('Not found'); return; }
-    res.writeHead(200, { 'Content-Type': types[ext] });
+    res.writeHead(200, { 'Content-Type': types[ext], 'X-Content-Type-Options': 'nosniff' });
     res.end(data);
   });
 });
@@ -206,6 +162,8 @@ wss.on('connection', (ws) => {
   ws.on('message', (raw) => {
     let m;
     try { m = JSON.parse(raw); } catch { return; }
+    if (!m || typeof m !== 'object') return;
+    if (player && (m.type === 'create' || m.type === 'join')) return;
 
     if (m.type === 'create') {
       const name = String(m.name || '').trim().slice(0, 16) || 'Player';

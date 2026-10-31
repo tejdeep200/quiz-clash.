@@ -1,67 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Quiz Clash - Multiplayer Trivia Battle</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div id="app">
-  <!-- HOME -->
-  <div class="screen active" id="scr-home">
-    <h1 class="logo">QUIZ <span>CLASH</span></h1>
-    <p class="tagline">Real-time trivia battle. No login needed.</p>
-    <div class="rules card">
-      <h3>How to play</h3>
-      <ol>
-        <li><b>Create</b> a room and share the 4-letter code, or <b>join</b> with one.</li>
-        <li>Answer <b>10 questions</b> before the 15-second timer runs out.</li>
-        <li><b>Faster correct answers = more points.</b> Watch the live leaderboard!</li>
-      </ol>
-    </div>
-    <input id="in-name" maxlength="16" placeholder="Your name" autocomplete="off">
-    <button id="btn-create" class="btn primary">Create Room</button>
-    <div class="join-row">
-      <input id="in-code" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters">
-      <button id="btn-join" class="btn secondary">Join</button>
-    </div>
-    <p id="home-err" class="err"></p>
-  </div>
-
-  <!-- LOBBY -->
-  <div class="screen" id="scr-lobby">
-    <h2>Room <span id="room-code" class="code"></span></h2>
-    <p class="hint">Share this code. Friends join from any phone or laptop.</p>
-    <ul id="lobby-players" class="plist"></ul>
-    <button id="btn-start" class="btn primary hidden">Start Game</button>
-    <p id="lobby-hint" class="hint"></p>
-  </div>
-
-  <!-- QUESTION -->
-  <div class="screen" id="scr-game">
-    <div class="qbar"><span id="q-num"></span><span id="q-timer"></span></div>
-    <div class="timer-track"><div id="timer-fill"></div></div>
-    <h2 id="q-text"></h2>
-    <div id="q-answers"></div>
-    <p id="q-locked" class="hint hidden">Locked in! Waiting for others...</p>
-  </div>
-
-  <!-- REVEAL -->
-  <div class="screen" id="scr-reveal">
-    <h2 id="rev-title"></h2>
-    <p id="rev-answer" class="hint"></p>
-    <ul id="rev-board" class="plist"></ul>
-  </div>
-
-  <!-- FINISHED -->
-  <div class="screen" id="scr-end">
-    <h1 class="logo small">GAME <span>OVER</span></h1>
-    <h2 id="winner"></h2>
-    <ul id="final-board" class="plist"></ul>
-    <button id="btn-again" class="btn primary">Back to Lobby</button>
-  </div>
-</div>
-<script src="client.js"></script>
-</body>
-</html>
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090c19"><meta name="description" content="Think fast. Clash harder. A free trivia arcade with 108 questions, six categories, and high-pressure Clash Mode. No login."><title>Quiz Clash — Think fast. Clash harder.</title><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"><script defer src="questions.js"></script><script defer src="engine.js"></script><script defer src="client.js"></script></head>
+<body><div class="ambient" aria-hidden="true"></div>
+<header class="topbar"><a class="brand" href="#" aria-label="Quiz Clash home"><span class="brand-icon">ϟ</span> QUIZ<span>CLASH</span><small>ARCADE</small></a><nav aria-label="Main"><button class="navlink" data-action="leaderboard">Leaderboard <span>↗</span></button><button id="sound" class="icon-button" aria-pressed="false" aria-label="Enable sound">♫ <span>Sound off</span></button></nav></header>
+<main id="main"><section id="home" class="screen" aria-labelledby="hero-title">
+<div class="hero"><div class="hero-copy"><p class="eyebrow"><span class="live-dot"></span> YOUR NEXT BRAIN RUSH</p><h1 id="hero-title">Think fast.<br>Clash <em>harder.</em></h1><p class="intro">Big questions. Split-second decisions.<br>Turn what you know into your next high score.</p><div class="hero-actions"><button class="button primary" data-action="play">Play now <span>↗</span></button><button class="button subtle" data-action="how">How to play <span>ⓘ</span></button></div><p class="micro"><span>✓ No sign-up</span><span>✓ Free to play</span><span>✓ All skill levels</span></p></div><div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><span class="spark s1">✦</span><span class="spark s2">+</span><span class="spark s3">✦</span><div class="floating-tag tag-top"><span>✧</span> KNOWLEDGE IS POWER</div><div class="clash-emblem"><div class="emblem-inner"><span class="bolt">ϟ</span></div></div><div class="floating-tag tag-bottom"><span>↗</span> BUILD YOUR STREAK <b>×4</b></div><span class="art-coordinate">EST. 2026 / ALWAYS CURIOUS</span></div></div>
+<div class="stat-strip"><div><b>108</b><span>curated questions</span></div><div><b>06</b><span>worlds to explore</span></div><div><b>03</b><span>difficulty levels</span></div><div class="stat-last"><span class="live-dot"></span><span>One more round energy.</span></div></div>
+<div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Your arena. Your rules.</h2></div><span class="section-note">A little pressure looks good on you.</span></div>
+<div class="mode-grid"><button class="mode-card solo-card" data-action="solo"><div class="mode-card-top"><span class="mode-icon">◎</span><span class="pill">THE CLASSIC</span></div><h3>Solo Sprint <span>↗</span></h3><p>Pick your specialty. Nail six questions.<br>Make every second count.</p><div class="card-foot"><span>6 QUESTIONS</span><span>20–12 SEC / QUESTION</span></div></button><button class="mode-card clash-card" data-action="clash"><div class="mode-card-top"><span class="mode-icon">ϟ</span><span class="pill purple">SIGNATURE MODE</span></div><h3>Clash Mode <span>↗</span></h3><p>All categories. A shrinking clock.<br>Keep your streak alive for a 4× multiplier.</p><div class="card-foot"><span>12 QUESTIONS</span><span>UP TO 4× COMBO</span></div></button></div><div class="bottom-note"><span>BUILT FOR THE CURIOUS. MADE FOR THE COMPETITIVE.</span><button data-action="leaderboard">Chase your personal best →</button></div></section>
+<section id="setup" class="screen narrow" hidden aria-labelledby="setup-title"><button class="back" data-action="home">← Back to arcade</button><p class="eyebrow" id="setup-label">SOLO SPRINT</p><h1 class="page-title" id="setup-title">Pick your playground.</h1><p class="muted" id="setup-info">Six questions. One category. Your moment.</p><fieldset id="category-field"><legend>01 <span>Choose a category</span></legend><div class="category-grid" id="categories"></div></fieldset><fieldset><legend>02 <span>Set the difficulty</span></legend><div class="difficulty-grid" id="difficulties"></div></fieldset><div class="setup-summary"><span id="round-summary"></span><button class="button primary" id="start">Let’s clash <span>→</span></button></div></section>
+<section id="game" class="screen game-layout" hidden aria-labelledby="question-text"><div class="game-top"><button class="back" data-action="quit">← Leave round</button><span id="mode-label" class="pill"></span></div><div class="scoreboard"><div><span>SCORE</span><b id="score">0</b></div><div><span>STREAK</span><b id="streak">0</b></div><div><span>MULTIPLIER</span><b id="multiplier">1×</b></div><div class="timer-box"><span>TIME LEFT</span><b id="timer" role="timer">20s</b></div></div><div class="timer-track"><div id="timer-fill"></div></div><div class="question-card"><div class="question-meta"><span id="question-category"></span><span id="question-count"></span></div><h1 id="question-text" tabindex="-1"></h1><div id="answers" class="answers"></div><div class="feedback-row"><p id="feedback" role="status"></p><button class="button primary" id="next" hidden>Next question →</button></div></div><div class="game-progress"><span id="progress-label"></span><div id="progress-dots"></div><span class="keyboard-hint">KEYS 1–4 TO ANSWER · ENTER TO CONTINUE</span></div></section>
+<section id="results" class="screen narrow results" hidden aria-labelledby="result-title"><p class="eyebrow">ROUND COMPLETE</p><div class="result-medal" aria-hidden="true">ϟ</div><h1 id="result-title" class="page-title">Clash complete.</h1><p id="rank" class="rank"></p><div id="final-score" class="final-score"></div><p class="muted">POINTS EARNED</p><div class="result-stats"><div><b id="accuracy"></b><span>Accuracy</span></div><div><b id="best-streak"></b><span>Best streak</span></div><div><b id="correct-count"></b><span>Correct</span></div></div><p id="saved-note" class="muted" role="status"></p><div class="result-actions"><button class="button primary" data-action="again">Play again ↗</button><button class="button secondary" data-action="change">Change category</button><button class="button subtle" id="share">Share score ↗</button></div><textarea id="share-text" aria-label="Shareable score text" hidden readonly></textarea><button class="back" data-action="home">← Back to arcade</button></section>
+<section id="leaderboard" class="screen narrow" hidden aria-labelledby="board-title"><button class="back" data-action="home">← Back to arcade</button><p class="eyebrow">YOUR HALL OF FAME</p><h1 class="page-title" id="board-title">Chase your best.</h1><p class="muted">Your top 10 rounds, saved on this device. Scores depend on mode and difficulty.</p><div id="board"></div><button class="button primary" data-action="play">Take the challenge ↗</button></section></main>
+<footer><span>© 2026 QUIZ CLASH</span><span>STAY SHARP. STAY CURIOUS.</span><span>108 questions. Endless ambition.</span></footer>
+<dialog id="how-dialog"><button class="close" data-close="how-dialog" aria-label="Close instructions">×</button><p class="eyebrow">THE PLAYBOOK</p><h2>Know it. Lock it. Clash.</h2><ol><li>Choose Solo Sprint for a category, or Clash Mode for a mixed challenge.</li><li>Pick Easy (20s), Medium (15s), or Hard (12s). Answer before time runs out.</li><li>Correct answers earn 100 base points, up to 100 speed points, and up to 100 streak points.</li><li>In Clash Mode, your multiplier rises every three consecutive correct answers, up to 4×. Every three questions, the clock gets two seconds shorter (minimum 6s).</li><li>A wrong answer or timeout resets your streak. Your final rank reflects accuracy.</li></ol><p class="muted">Use 1–4 to answer and Enter to continue, or tap any answer. Leaderboards are stored on your device.</p><button class="button primary" data-close="how-dialog">Got it →</button></dialog>
+<dialog id="quit-dialog"><h2>Leave this round?</h2><p class="muted">Your current progress won’t be saved. The clock keeps running until you leave.</p><div class="result-actions"><button class="button secondary" data-close="quit-dialog">Keep playing</button><button class="button primary" id="confirm-quit">Leave round</button></div></dialog><div id="toast" role="status"></div></body></html>

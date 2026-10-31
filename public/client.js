@@ -1,128 +1,30 @@
-// Quiz Clash client
-const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
-let myId = null, myName = '', isHost = false, timerInt = null, lastAnswers = [];
-
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function err(msg) { document.getElementById('home-err').textContent = msg; }
-function send(type, data = {}) { ws.send(JSON.stringify({ type, ...data })); }
-
-function renderLobby(room) {
-  document.getElementById('room-code').textContent = room.code;
-  const ul = document.getElementById('lobby-players');
-  ul.innerHTML = '';
-  room.players.forEach(p => {
-    const li = document.createElement('li');
-    if (p.id === myId) li.className = 'me';
-    li.innerHTML = `<span>${esc(p.name)}${p.isHost ? '<span class="host-tag">HOST</span>' : ''}${p.connected ? '' : ' <span class="off">(away)</span>'}</span><span class="pts">${p.score}</span>`;
-    ul.appendChild(li);
-  });
-  const me = room.players.find(p => p.id === myId);
-  isHost = me && me.isHost;
-  const btn = document.getElementById('btn-start');
-  const hint = document.getElementById('lobby-hint');
-  if (isHost) {
-    btn.classList.remove('hidden');
-    btn.disabled = room.players.length < 2;
-    btn.textContent = room.players.length < 2 ? 'Waiting for players...' : 'Start Game';
-    hint.textContent = '';
-  } else {
-    btn.classList.add('hidden');
-    hint.textContent = 'Waiting for the host to start the game...';
-  }
-}
-function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-
-function renderBoard(ulId, list) {
-  const ul = document.getElementById(ulId);
-  ul.innerHTML = '';
-  list.forEach((p, i) => {
-    const li = document.createElement('li');
-    if (i === 0) li.className = 'winner';
-    if (p.id === myId) li.classList.add('me');
-    li.innerHTML = `<span>${i + 1}. ${esc(p.name)}${p.id === myId ? ' (you)' : ''}</span><span class="pts">${p.score}</span>`;
-    ul.appendChild(li);
-  });
-}
-
-function startTimer(seconds) {
-  clearInterval(timerInt);
-  let left = seconds;
-  const tick = () => {
-    document.getElementById('q-timer').textContent = left + 's';
-    document.getElementById('timer-fill').style.width = (left / seconds * 100) + '%';
-    left--;
-  };
-  tick();
-  timerInt = setInterval(() => { if (left < 0) clearInterval(timerInt); else tick(); }, 1000);
-}
-
-ws.onmessage = (e) => {
-  const m = JSON.parse(e.data);
-  if (m.type === 'joined') {
-    myId = m.you.id; myName = m.you.name;
-    renderLobby(m.room); show('scr-lobby');
-  }
-  else if (m.type === 'players') {
-    if (document.getElementById('scr-lobby').classList.contains('active')) renderLobby(m.room);
-  }
-  else if (m.type === 'host_changed') { /* lobby re-renders on next players msg */ }
-  else if (m.type === 'question') {
-    show('scr-game');
-    document.getElementById('q-num').textContent = `Question ${m.qNum} of ${m.qTotal}`;
-    document.getElementById('q-text').textContent = m.text;
-    document.getElementById('q-locked').classList.add('hidden');
-    const box = document.getElementById('q-answers');
-    box.innerHTML = '';
-    lastAnswers = m.answers;
-    m.answers.forEach((a, i) => {
-      const b = document.createElement('button');
-      b.className = 'ans'; b.textContent = a;
-      b.onclick = () => {
-        send('answer', { choice: i });
-        box.querySelectorAll('.ans').forEach(x => { x.classList.add('locked'); x.onclick = null; });
-        b.style.borderColor = '#7c5cff';
-        document.getElementById('q-locked').classList.remove('hidden');
-      };
-      box.appendChild(b);
-    });
-    startTimer(m.seconds);
-  }
-  else if (m.type === 'answer_result') { /* silent; reveal shows it */ }
-  else if (m.type === 'reveal') {
-    clearInterval(timerInt);
-    show('scr-reveal');
-    document.getElementById('rev-title').textContent = 'Leaderboard';
-    const box = document.getElementById('q-answers');
-    const answers = m.results;
-    // mark correct/wrong on the question screen is gone; just show board
-    renderBoard('rev-board', [...m.room.players].sort((a, b) => b.score - a.score));
-    const me = m.results.find(r => r.id === myId);
-    if (me) document.getElementById('rev-title').textContent = me.correct ? 'Correct!' : (me.answered ? 'Wrong!' : 'Too slow!');
-    document.getElementById('rev-answer').textContent = 'Correct answer: ' + (lastAnswers[m.correctIndex] || '');
-  }
-  else if (m.type === 'finished') {
-    show('scr-end');
-    const top = m.ranked[0];
-    document.getElementById('winner').textContent = top.id === myId ? 'YOU WIN!' : `${top.name} wins!`;
-    renderBoard('final-board', m.ranked);
-  }
-  else if (m.type === 'error') { err(m.message); }
-};
-
-document.getElementById('btn-create').onclick = () => {
-  const name = document.getElementById('in-name').value.trim();
-  if (!name) { err('Enter your name first.'); return; }
-  err(''); send('create', { name });
-};
-document.getElementById('btn-join').onclick = () => {
-  const name = document.getElementById('in-name').value.trim();
-  const code = document.getElementById('in-code').value.trim();
-  if (!name) { err('Enter your name first.'); return; }
-  if (code.length !== 4) { err('Enter the 4-letter room code.'); return; }
-  err(''); send('join', { name, code });
-};
-document.getElementById('btn-start').onclick = () => send('start', {});
-document.getElementById('btn-again').onclick = () => location.reload();
+'use strict';
+const $=id=>document.getElementById(id), E=QuizEngine;
+let category='Technology',difficulty='Medium',mode='solo',state='home',round=[],index=0,score=0,streak=0,best=0,correct=0,locked=true,deadline=0,seconds=0,ticker=null,sound=false,audio=null,result=null,toastTimer;
+function storage(){try{return localStorage;}catch{return null;}}
+function toast(message){$('toast').textContent=message;$('toast').style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').style.display='none',3200);}
+function tone(good){if(!sound)return;try{audio ||= new (window.AudioContext||window.webkitAudioContext)();audio.resume().catch(()=>{});const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.connect(gain);gain.connect(audio.destination);oscillator.type='sine';oscillator.frequency.setValueAtTime(good?660:180,audio.currentTime);oscillator.frequency.exponentialRampToValueAtTime(good?990:90,audio.currentTime+.14);gain.gain.setValueAtTime(.07,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.2);oscillator.start();oscillator.stop(audio.currentTime+.21);}catch{}}
+function show(id){state=id;document.querySelectorAll('.screen').forEach(el=>el.hidden=el.id!==id);window.scrollTo({top:0,behavior:'instant'});const heading=$(id).querySelector('h1');if(heading&&id!=='game'){heading.tabIndex=-1;heading.focus({preventScroll:true});}}
+function setup(nextMode=mode){mode=nextMode;$('setup-label').textContent=mode==='clash'?'SIGNATURE · CLASH MODE':'SOLO SPRINT';$('setup-title').textContent=mode==='clash'?'Pressure makes legends.':'Pick your playground.';$('setup-info').textContent=mode==='clash'?'Twelve questions across all categories. A faster clock every three questions.':'Six questions. One category. Your moment.';$('category-field').hidden=mode==='clash';updateSelection();show('setup');}
+const symbols=['⌘','⚗','⌛','◎','⚑','✧'];
+Object.keys(QUIZ_QUESTIONS.reduce((o,q)=>(o[q.category]=true,o),{})).forEach((name,i)=>{const b=document.createElement('button');b.className='category';b.innerHTML=`<span class="category-symbol" aria-hidden="true">${symbols[i]}</span><b></b><small>18 questions · 3 levels</small>`;b.querySelector('b').textContent=name;b.dataset.category=name;b.onclick=()=>{category=name;updateSelection();};$('categories').append(b);});
+['Easy','Medium','Hard'].forEach(name=>{const b=document.createElement('button');b.className='difficulty';b.dataset.difficulty=name;b.innerHTML=`<b>${name}</b><small>${E.duration(name,'solo',0)} seconds · ${name==='Easy'?'Find your rhythm':name==='Medium'?'Bring your A-game':'No room for doubt'}</small>`;b.onclick=()=>{difficulty=name;updateSelection();};$('difficulties').append(b);});
+function updateSelection(){document.querySelectorAll('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));document.querySelectorAll('[data-difficulty]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.difficulty===difficulty)));$('round-summary').textContent=`${mode==='clash'?'12 questions · All categories':'6 questions · '+category} · ${difficulty}`;}
+function start(){clearInterval(ticker);round=E.round(QUIZ_QUESTIONS,category,difficulty,mode);index=score=streak=best=correct=0;result=null;show('game');question();}
+function question(){locked=false;seconds=E.duration(difficulty,mode,index);deadline=performance.now()+seconds*1000;const q=round[index];$('mode-label').textContent=mode==='clash'?'ϟ CLASH MODE':'◎ SOLO SPRINT';$('question-category').textContent=q.category.toUpperCase()+' / '+difficulty.toUpperCase();$('question-count').textContent=`QUESTION ${String(index+1).padStart(2,'0')} / ${round.length}`;$('question-text').textContent=q.text;$('question-text').focus({preventScroll:true});$('feedback').textContent='';$('feedback').style.color='';$('next').hidden=true;$('answers').replaceChildren();q.answers.forEach((text,i)=>{const b=document.createElement('button');b.className='answer';const key=document.createElement('span');key.textContent=i+1;key.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=text;b.append(key,label);b.onclick=()=>answer(i);$('answers').append(b);});$('progress-label').textContent=`${index+1} / ${round.length}`;$('progress-dots').innerHTML=round.map((_,i)=>`<i class="${i<index?'done':i===index?'current':''}"></i>`).join('');updateStats();tick();ticker=setInterval(tick,80);}
+function remaining(){return Math.max(0,(deadline-performance.now())/1000);}
+function tick(){if(locked)return;const left=remaining();$('timer').textContent=`${Math.ceil(left)}s`;$('timer-fill').style.width=`${Math.min(100,left/seconds*100)}%`;$('game').classList.toggle('urgent',left<=5);if(left<=0)answer(-1);}
+function answer(choice){if(locked||state!=='game')return;const left=remaining();locked=true;clearInterval(ticker);const q=round[index],isCorrect=choice===q.correct&&left>0,earned=E.award(isCorrect,streak,left,seconds,mode);streak=earned.streak;best=Math.max(best,streak);score+=earned.points;if(isCorrect)correct++;const timedOut=left<=0;document.querySelectorAll('.answer').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('correct');else if(i===choice&&!timedOut)b.classList.add('wrong');});$('timer').textContent=`${Math.ceil(left)}s`;$('timer-fill').style.width=`${left/seconds*100}%`;$('feedback').style.color=isCorrect?'var(--cyan)':'#ffbdc7';$('feedback').textContent=isCorrect?`Correct! +${earned.points} points${earned.multiplier>1?' · '+earned.multiplier+'× combo':''}`:`${timedOut?'Time’s up!':'Not this time.'} Correct: ${q.answers[q.correct]}`;$('next').textContent=index===round.length-1?'See results →':'Next question →';$('next').hidden=false;updateStats();tone(isCorrect);$('next').focus({preventScroll:true});}
+function updateStats(){$('score').textContent=score.toLocaleString();$('streak').textContent=streak;$('multiplier').textContent=(mode==='clash'?Math.min(4,1+Math.floor(Math.max(0,streak-1)/3)):1)+'×';}
+function finish(){clearInterval(ticker);locked=true;const accuracy=Math.round(correct/round.length*100);result={score,category:mode==='clash'?'All categories':category,difficulty,mode,accuracy,date:new Date().toISOString()};const saved=E.saveScore(storage(),result);$('final-score').textContent=score.toLocaleString();$('rank').textContent=E.rank(accuracy);$('result-title').textContent=accuracy>=80?'You brought the fire.':'That’s a wrap.';$('accuracy').textContent=accuracy+'%';$('best-streak').textContent=best;$('correct-count').textContent=`${correct}/${round.length}`;$('saved-note').textContent=saved?'Your score is saved to this device.':'Storage is unavailable. Your score is shown here but could not be saved.';$('share-text').hidden=true;show('results');if(accuracy>=60&&!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<35;i++){const p=document.createElement('i');p.className='confetti';p.style.left=Math.random()*100+'vw';p.style.animationDelay=Math.random()*.4+'s';document.body.append(p);setTimeout(()=>p.remove(),2500);}}}
+function board(){const rows=E.readScores(storage());$('board').replaceChildren();if(!rows.length){const p=document.createElement('p');p.className='empty-board';p.textContent='Your first great round belongs here. Let’s set a high score.';$('board').append(p);}rows.forEach((entry,i)=>{const row=document.createElement('div');row.className='board-row';const place=document.createElement('b');place.textContent=String(i+1).padStart(2,'0');const label=document.createElement('div');label.textContent=entry.mode==='clash'?'Clash Mode':entry.category;const small=document.createElement('small');small.textContent=`${entry.difficulty} · ${entry.accuracy??'—'}% accuracy`;label.append(small);const points=document.createElement('strong');points.textContent=entry.score.toLocaleString();row.append(place,label,points);$('board').append(row);});show('leaderboard');}
+function home(){clearInterval(ticker);locked=true;show('home');}
+const actions={home,play:()=>setup('solo'),solo:()=>setup('solo'),clash:()=>setup('clash'),how:()=>$('how-dialog').showModal(),leaderboard:board,again:start,change:()=>setup(mode),quit:()=>$('quit-dialog').showModal()};
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>actions[b.dataset.action]());document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());document.querySelector('.brand').onclick=e=>{e.preventDefault();if(state==='game')$('quit-dialog').showModal();else home();};
+document.querySelector('.navlink').onclick=()=>{if(state==='game'){toast('Finish or leave your round to view the leaderboard.');return;}board();};
+$('confirm-quit').onclick=()=>{$('quit-dialog').close();home();};$('start').onclick=start;$('next').onclick=()=>{if(!locked||state!=='game')return;index++;if(index>=round.length)finish();else question();};
+$('sound').onclick=()=>{sound=!sound;$('sound').setAttribute('aria-pressed',String(sound));$('sound').setAttribute('aria-label',sound?'Disable sound':'Enable sound');$('sound').querySelector('span').textContent=sound?'Sound on':'Sound off';try{storage()?.setItem('quiz-clash-sound',String(sound));}catch{}if(sound)tone(true);};
+try{if(storage()?.getItem('quiz-clash-sound')==='true')$('sound').click();}catch{}
+$('share').onclick=async()=>{if(!result)return;const text=`I scored ${result.score.toLocaleString()} in Quiz Clash ${result.mode==='clash'?'Clash Mode':'Solo Sprint'} (${result.difficulty})! ${result.accuracy}% accuracy · ${E.rank(result.accuracy)}. Can you beat it? ${location.href.split('#')[0]}`;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);toast('Score copied. Challenge a friend!');return;}}catch{}$('share-text').value=text;$('share-text').hidden=false;$('share-text').focus();$('share-text').select();toast('Select and copy your score below.');};
+document.addEventListener('keydown',event=>{if(event.repeat||document.querySelector('dialog[open]')||/INPUT|TEXTAREA/.test(event.target.tagName)||event.ctrlKey||event.metaKey||event.altKey)return;if(state==='game'&&!locked&&/^[1-4]$/.test(event.key)){event.preventDefault();answer(Number(event.key)-1);}else if(state==='game'&&locked&&event.key==='Enter'&&event.target!==$('next')){event.preventDefault();$('next').click();}});
+document.addEventListener('visibilitychange',()=>{if(state==='game'&&!locked)tick();});
