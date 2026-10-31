@@ -27,11 +27,24 @@ npm run test:browser
 
 The local game serves at `http://localhost:3000`. Browser tests use installed Microsoft Edge locally. On Linux CI they use Playwright Chromium; run `npx playwright install --with-deps chromium` first. The test server uses port 4317; set `TEST_URL` to test another running server or the deployed URL (include its trailing slash).
 
-The static production build is `dist/`. GitHub Actions runs syntax checks, game-engine tests, browser tests, builds, and publishes to GitHub Pages on pushes to main. No environment secrets are needed by the game.
+The optional static build is `dist/`; it excludes the multiplayer server. GitHub Actions runs checks, solo and multiplayer browser tests, and a build on pushes to main. It does not publish to GitHub Pages. The multiplayer deployment uses Render.
 
 ## Original multiplayer game
 
-The existing Node.js/WebSocket room game remains available at `http://localhost:3000/multiplayer/` when running `npm start`. It uses the same corrected 108-question bank. GitHub Pages hosts Solo Sprint and Clash Mode; it cannot run the WebSocket server. Multiplayer requires a Node-capable host and is excluded from the static build.
+The Node.js/WebSocket room game is available at `http://localhost:3000/multiplayer/` when running `npm start`. It uses the same corrected 108-question bank.
+
+## Render multiplayer deployment
+
+`render.yaml` defines a **free Node Web Service**, built with `npm install` and started with `node server.js`. The service binds to `0.0.0.0` on `process.env.PORT`. `/healthz` provides its health check. With `DEFAULT_GAME=multiplayer`, the root URL opens the multiplayer client; `/index.html` still opens the solo arcade. Rooms use one process's memory and disappear on restarts or redeploys.
+
+To verify the public deployment, run:
+
+```powershell
+$env:MULTIPLAYER_URL='https://<actual-service>.onrender.com/'
+npm run test:multiplayer
+```
+
+The test opens independent desktop and mobile browser contexts, creates a four-letter room, joins with a second name, and plays all ten questions. It checks matching question text, answer choices, timers, updated leaderboards, and final standings. A local pass does not verify a public deployment; run it against the actual Render URL before sharing it.
 
 ## Scoring
 

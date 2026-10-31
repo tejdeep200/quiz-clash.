@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: quiz-clash-multiplayer
+    runtime: node
+    plan: free
+    region: virginia
+    repo: https://github.com/tejdeep200/quiz-clash.
+    branch: main
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DEFAULT_GAME
+        value: multiplayer

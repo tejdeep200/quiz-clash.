@@ -9,7 +9,15 @@ function show(id) {
 function err(msg) { document.getElementById('home-err').textContent = msg; }
 function send(type, data = {}) { if (ws.readyState !== WebSocket.OPEN) { err('Connecting failed. Reload the page to try again.'); return; } ws.send(JSON.stringify({ type, ...data })); }
 ws.onerror = () => err('Could not connect to the game server. Reload to retry.');
-ws.onclose = () => { clearInterval(timerInt); err('Disconnected. Reload to reconnect.'); alert('The connection closed. Reload to reconnect.'); };
+ws.onclose = () => {
+  clearInterval(timerInt);
+  const notice = document.createElement('div');
+  notice.setAttribute('role', 'alert');
+  notice.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:16px;background:#3f1733;color:white;text-align:center;z-index:10';
+  notice.textContent = 'Connection closed. Reload to start a new game. ';
+  const reload = document.createElement('button'); reload.textContent = 'Reload'; reload.onclick = () => location.reload();
+  notice.append(reload); document.body.append(notice);
+};
 
 function renderLobby(room) {
   document.getElementById('room-code').textContent = room.code;
@@ -49,16 +57,18 @@ function renderBoard(ulId, list) {
   });
 }
 
-function startTimer(seconds) {
+function startTimer(seconds, endsAt, serverTime) {
   clearInterval(timerInt);
-  let left = seconds;
+  const duration = Number.isFinite(endsAt) && Number.isFinite(serverTime) ? Math.max(0, endsAt - serverTime) : seconds * 1000;
+  const deadline = performance.now() + duration;
   const tick = () => {
+    const left = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
     document.getElementById('q-timer').textContent = left + 's';
     document.getElementById('timer-fill').style.width = (left / seconds * 100) + '%';
-    left--;
+    if (left === 0) clearInterval(timerInt);
   };
   tick();
-  timerInt = setInterval(() => { if (left < 0) clearInterval(timerInt); else tick(); }, 1000);
+  timerInt = setInterval(tick, 100);
 }
 
 ws.onmessage = (e) => {
@@ -90,7 +100,7 @@ ws.onmessage = (e) => {
       };
       box.appendChild(b);
     });
-    startTimer(m.seconds);
+    startTimer(m.seconds, m.endsAt, m.serverTime);
   }
   else if (m.type === 'answer_result') { /* silent; reveal shows it */ }
   else if (m.type === 'reveal') {

@@ -1,14 +1,12 @@
-name: Test and deploy Quiz Clash
+name: Quiz Clash checks
 on:
   push:
     branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
-  group: pages
+  group: quiz-checks
   cancel-in-progress: true
 jobs:
   build:
@@ -24,18 +22,5 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - run: npm run test:multiplayer
       - run: npm run build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy public game
-        id: deployment
-        uses: actions/deploy-pages@v4

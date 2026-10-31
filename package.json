@@ -10,7 +10,8 @@
     "build": "node scripts/build.js",
     "test": "node --test tests/engine.test.js",
     "check": "node --check server.js && node --check public/client.js && node --check public/engine.js && node --check public/questions.js",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:multiplayer": "playwright test --config=playwright.multiplayer.config.js"
   },
   "version": "2.0.0",
   "devDependencies": {

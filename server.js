@@ -15,7 +15,7 @@ const QUESTIONS = require('./public/questions').map(q => ({q:q.text,a:q.answers,
 
 // ---------- Rooms ----------
 const rooms = new Map();
-const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no ambiguous chars
+const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ'; // four letters, no ambiguous I/L/O
 
 function newCode() {
   let code;
@@ -73,6 +73,7 @@ function nextQuestion(room) {
     room: roomState(room),
     qNum: room.qIndex + 1, qTotal: room.questions.length,
     text: q.q, answers: q.a, seconds: QUESTION_SECONDS,
+    endsAt: room.qStart + QUESTION_SECONDS * 1000, serverTime: Date.now(),
   });
   clearTimer(room);
   room.timer = setTimeout(() => reveal(room), QUESTION_SECONDS * 1000);
@@ -139,6 +140,13 @@ const server = http.createServer((req, res) => {
   let file;
   try { file = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
   catch { res.writeHead(400); res.end('Bad request'); return; }
+  if (file === '/healthz') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok' })); return;
+  }
+  if (file === '/' && process.env.DEFAULT_GAME === 'multiplayer') {
+    res.writeHead(302, { Location: '/multiplayer/' }); res.end(); return;
+  }
   if (file.endsWith('/')) file += 'index.html';
   const base = path.resolve(__dirname, 'public');
   const fp = path.resolve(base, '.' + file);
@@ -152,12 +160,13 @@ const server = http.createServer((req, res) => {
   });
 });
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server, maxPayload: 16 * 1024 });
 let nextId = 1;
 
 wss.on('connection', (ws) => {
   const id = 'p' + (nextId++);
   let player = null;
+  ws.on('error', () => {}); // close handler cleans up failed connections
 
   ws.on('message', (raw) => {
     let m;
@@ -214,6 +223,9 @@ wss.on('connection', (ws) => {
     if (!player || !player.room) return;
     const room = player.room;
     player.connected = false;
+    if (![...room.players.values()].some(p => p.connected)) {
+      clearTimer(room); rooms.delete(room.code); return;
+    }
     if (room.state === 'lobby') {
       removePlayer(room, player);
     } else {
@@ -223,8 +235,11 @@ wss.on('connection', (ws) => {
         if (alive) { room.hostId = alive.id; broadcast(room, 'host_changed', {}); }
       }
       broadcast(room, 'players', { room: roomState(room) });
+      if (room.state === 'question' && [...room.players.values()].filter(p => p.connected).every(p => p.answered)) {
+        reveal(room);
+      }
     }
   });
 });
 
-server.listen(PORT, () => console.log(`Quiz Clash running on http://localhost:${PORT}`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Quiz Clash running on port ${server.address().port}`));
